@@ -1,19 +1,31 @@
-'''
-Pull down the imbd_movies dataset here and save to /data as imdb_movies_2000to2022.prolific.json
-You will run this project from main.py, so need to set things up accordingly
-'''
-
+import requests
+import os
 import json
 import analysis_network_centrality
-import analysis_similar_actors_genre
 
-# Ingest and save the imbd_movies dataset
+
+
+def download_imdb_data():
+    """Downloads the datafrom the imdb github file.
+    """
+    
+    imdb_url = 'https://raw.githubusercontent.com/cbuntain/umd.inst414/main/data/imdb_movies_2000to2022.prolific.json'
+
+    #file for the data to be saved
+    json_file = 'data/imdb_movies_2000to2022.prolific.json'
+
+    os.makedirs(os.path.dirname(json_file), exist_ok=True)
+
+    response = requests.get(imdb_url)
+
+    with open(json_file, 'w') as f:
+        f.write(response.text)
 
 
 
 # Call functions / instanciate objects from the two analysis .py files
 def main():
-
+    download_imdb_data()
 
 
 
