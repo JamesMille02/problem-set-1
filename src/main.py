@@ -2,6 +2,7 @@ import requests
 import os
 import json
 import analysis_network_centrality
+import analysis_similar_actors_genre
 
 
 
@@ -27,6 +28,7 @@ def download_imdb_data():
 def main():
     download_imdb_data()
     analysis_network_centrality.network_centrality('/data/imdb_movies_2000to2022.prolific.json')
+    analysis_similar_actors_genre.similarity_analysis('/data/imdb_movies_2000to2022.prolific.json', 'nm1165110')
 
 
 

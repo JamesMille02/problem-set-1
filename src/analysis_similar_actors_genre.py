@@ -24,3 +24,59 @@ Using the imbd_movies dataset:
 '''
 
 #Write your code below
+
+import json
+import pandas as pd
+from sklearn.metrics import pairwise_distances
+from datetime import datetime
+
+def similarity_analysis(movie, query):
+    """Calculates the most similar actors based on genre.
+    
+    Args:
+        movie(str): path to movie data set
+        query(str): actor id for querying the graph
+    
+    Prints:
+        similar_10(df): 10 most similar actors to one specfic actor
+    """
+
+    with open(movie, 'r') as movie_file:
+        movie_data_line = [json.loads(line) for line in movie_file]
+
+    actor_genres = {}
+
+    for single_movie in movie_data_line:
+        genres = single_movie['genres']
+        for actor_id, actor_name in single_movie['actors']:
+            if actor_id not in actor_genres:
+                actor_genres[actor_id] = {genre: 0 for genre in genres}
+            for genre in genres:
+                if genre in actor_genres[actor_id]:
+                    actor_genres[actor_id][genre] += 1
+                else:
+                    actor_genres[actor_id][genre] = 1
+
+    dataframe = pd.DataFrame.from_dict(actor_genres, orient = 'index').fillna(0)
+
+    dataframe.index.name = 'Actor_ID'
+
+    vector = dataframe.loc[query].values.reshape(1 , -1)
+
+    euclidean_distance = pairwise_distances(vector, dataframe.values, metric = 'euclidean')
+
+    dataframe['distance'] = euclidean_distance.flatten()
+    most_similar_10 = dataframe.nsmallest(10, 'distance')
+
+    print('Top 10 Similar Actors:')
+    print(most_similar_10)
+
+    most_similar_10.reset_index(inplace = True)
+    most_similar_10.index.name = 'ID'
+    most_similar_10['ID'] = most_similar_10.index
+
+    columns = ['ID'] + [col for col in most_similar_10.columns if col != 'ID']
+    most_similar_10 = most_similar_10[columns]
+
+    current_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+    most_similar_10.to_csv(f'data/similar_actors_genre_{current_datetime}.csv', index=False)
