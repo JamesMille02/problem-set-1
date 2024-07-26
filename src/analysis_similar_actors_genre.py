@@ -95,9 +95,11 @@ def similarity_analysis(movie, query):
     cosine_most_similar_10 = cosine_dataframe.nsmallest(10, 'distance')
     euclidean_most_similar_10 = euclidean_dataframe.nsmallest(10, 'distance')
 
+    #gets actor names for top 10
     cosine_most_similar_10['Actor_Name'] = cosine_most_similar_10.index.map(actor_names)
     euclidean_most_similar_10['Actor_Name'] = euclidean_most_similar_10.index.map(actor_names)
 
+    #saves the most similar 10
     cosine_most_similar_10 = cosine_most_similar_10[['Actor_Name', 'distance']]
     euclidean_most_similar_10 = euclidean_most_similar_10[['Actor_Name', 'distance']]
 
