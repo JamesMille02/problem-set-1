@@ -17,6 +17,8 @@ def network_centrality(movie):
     #initializaes graph
     network_analysis_graph = nx.Graph()
 
+    actor_names = {}
+
     #loads data from data folder
     with open(movie, 'r') as in_file:
         #goes through each line in the file
@@ -28,6 +30,7 @@ def network_centrality(movie):
             for actor_id, actor_name in movie['actors']:
                 #adds node to graph
                 network_analysis_graph.add_node(actor_id, name= actor_name)
+                actor_names[actor_id] = actor_name
             
             #creates list of actor id for movie
             actors = [actor_id for actor_id, _ in movie['actors']]
@@ -50,9 +53,12 @@ def network_centrality(movie):
 
     #creates dataframewith centraity items and actors id
     centrality_dataframe = pd.DataFrame(centrality.items(), columns = ['Actor_ID', 'Centrality'])
-    
+
+    centrality_dataframe['Actor_Name'] = centrality_dataframe['Actor_ID'].map(actor_names)
+
     #saves 10 most central actors
     most_central = centrality_dataframe.nlargest(10, 'Centrality')
+
 
     print("10 most central actors")
     print(most_central)
