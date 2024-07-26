@@ -41,42 +41,76 @@ def similarity_analysis(movie, query):
         similar_10(df): 10 most similar actors to one specfic actor
     """
 
+    #opens data
     with open(movie, 'r') as movie_file:
+        #saves each line of data
         movie_data_line = [json.loads(line) for line in movie_file]
 
+    #creates dictionary for each actors genre
     actor_genres = {}
 
+    #assigns number for each movie genre each movie the actor has been part of
+    #iterates through each line in the movie data
     for single_movie in movie_data_line:
+        #saves all genres in the list
         genres = single_movie['genres']
+        #iterates through all actors in movie dataset
         for actor_id, actor_name in single_movie['actors']:
+            #sees if in dictionary
             if actor_id not in actor_genres:
+                #adds actor to set of genres
                 actor_genres[actor_id] = {genre: 0 for genre in genres}
+            #iterates through the genres
             for genre in genres:
+                #checks if genre is in the actors genres
                 if genre in actor_genres[actor_id]:
+                    #adds 1 in the actor if it is
                     actor_genres[actor_id][genre] += 1
                 else:
+                    #sets it to one if not
                     actor_genres[actor_id][genre] = 1
+    
+    #creates dataframe
+    cosine_dataframe = pd.DataFrame.from_dict(actor_genres, orient = 'index').fillna(0)
+    euclidean_dataframe = pd.DataFrame.from_dict(actor_genres, orient = 'index').fillna(0)
 
-    dataframe = pd.DataFrame.from_dict(actor_genres, orient = 'index').fillna(0)
+    #renames index to actor id
+    cosine_dataframe.index.name = 'Actor_ID'
+    euclidean_dataframe.index.name = 'Actor_ID'
 
-    dataframe.index.name = 'Actor_ID'
+    #reshapes dataframe for distance calc
+    cosine_vector = cosine_dataframe.loc[query].values.reshape(1 , -1)
+    euclidean_vector = euclidean_dataframe.loc[query].values.reshape(1 , -1)
 
-    vector = dataframe.loc[query].values.reshape(1 , -1)
+    #calc distance
+    cosine_distance = pairwise_distances(cosine_vector, cosine_dataframe.values, metric = 'cosine')
+    euclidean_distance = pairwise_distances(euclidean_vector, euclidean_dataframe.values, metric = 'euclidean')
 
-    euclidean_distance = pairwise_distances(vector, dataframe.values, metric = 'euclidean')
-
-    dataframe['distance'] = euclidean_distance.flatten()
-    most_similar_10 = dataframe.nsmallest(10, 'distance')
+    #adds new column to data frame and flattens it to 1d
+    cosine_dataframe['distance'] = cosine_distance.flatten()
+    euclidean_dataframe['distance'] = euclidean_distance.flatten()
+    #finds 10 closest relationships
+    cosine_most_similar_10 = cosine_dataframe.nsmallest(10, 'distance')
+    euclidean_most_similar_10 = euclidean_dataframe.nsmallest(10, 'distance')
 
     print('Top 10 Similar Actors:')
-    print(most_similar_10)
+    print(euclidean_most_similar_10)
 
-    most_similar_10.reset_index(inplace = True)
-    most_similar_10.index.name = 'ID'
-    most_similar_10['ID'] = most_similar_10.index
+    #resets index
+    cosine_most_similar_10.reset_index(inplace = True)
+    #renames index
+    cosine_most_similar_10.index.name = 'ID'
+    #adds index to the data frame
+    cosine_most_similar_10['ID'] = cosine_most_similar_10.index
 
-    columns = ['ID'] + [col for col in most_similar_10.columns if col != 'ID']
-    most_similar_10 = most_similar_10[columns]
+    #moves the id column so it is first in the dataframe
+    columns = ['ID'] + [col for col in cosine_most_similar_10.columns if col != 'ID']
+    cosine_most_similar_10 = cosine_most_similar_10[columns]
 
+    #saves current date  and time
     current_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
-    most_similar_10.to_csv(f'data/similar_actors_genre_{current_datetime}.csv', index=False)
+    #saves dataframe as csv
+    cosine_most_similar_10.to_csv(f'data/similar_actors_genre_{current_datetime}.csv', index=False)
+
+    print("the list changes based on Euclidean distance by changing how closely related the actors genres are changing the top 10 closest relationships")
+    print("comparing the printed euclidean distance results to cosine you will see that the first 4 actors are the same in both; however, the final 6 are different")

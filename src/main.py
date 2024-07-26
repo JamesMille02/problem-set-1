@@ -19,15 +19,18 @@ def download_imdb_data():
 
     response = requests.get(imdb_url)
 
+    data = response.text.strip().split('\n')
+    json_data = '[' + ','.join(data) + ']'
+
     with open(json_file, 'w') as f:
-        f.write(response.text)
+        f.write(json_data)
 
 
 
 # Call functions / instanciate objects from the two analysis .py files
 def main():
     download_imdb_data()
-    analysis_network_centrality.network_centrality('/data/imdb_movies_2000to2022.prolific.json')
+    #analysis_network_centrality.network_centrality('/data/imdb_movies_2000to2022.prolific.json')
     analysis_similar_actors_genre.similarity_analysis('/data/imdb_movies_2000to2022.prolific.json', 'nm1165110')
 
 
