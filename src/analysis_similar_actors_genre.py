@@ -48,6 +48,7 @@ def similarity_analysis(movie, query):
 
     #creates dictionary for each actors genre
     actor_genres = {}
+    actor_names = {}
 
     #assigns number for each movie genre each movie the actor has been part of
     #iterates through each line in the movie data
@@ -60,6 +61,7 @@ def similarity_analysis(movie, query):
             if actor_id not in actor_genres:
                 #adds actor to set of genres
                 actor_genres[actor_id] = {genre: 0 for genre in genres}
+                actor_names[actor_id] = actor_name
             #iterates through the genres
             for genre in genres:
                 #checks if genre is in the actors genres
@@ -93,7 +95,13 @@ def similarity_analysis(movie, query):
     cosine_most_similar_10 = cosine_dataframe.nsmallest(10, 'distance')
     euclidean_most_similar_10 = euclidean_dataframe.nsmallest(10, 'distance')
 
-    print('Top 10 Similar Actors:')
+    cosine_most_similar_10['Actor_Name'] = cosine_most_similar_10.index.map(actor_names)
+    euclidean_most_similar_10['Actor_Name'] = euclidean_most_similar_10.index.map(actor_names)
+
+    cosine_most_similar_10 = cosine_most_similar_10[['Actor_Name', 'distance']]
+    euclidean_most_similar_10 = euclidean_most_similar_10[['Actor_Name', 'distance']]
+
+    print('Euclidean Top 10 Similar Actors:')
     print(euclidean_most_similar_10)
 
     #resets index
